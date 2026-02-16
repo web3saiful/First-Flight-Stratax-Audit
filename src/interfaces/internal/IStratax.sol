@@ -15,30 +15,30 @@ interface IStratax {
     struct FlashLoanParams {
         address collateralToken;
         uint256 collateralAmount;
-        address borrowToken;
+        address borrowToken;//! The token to borrow from Aave
         uint256 borrowAmount;
         bytes oneInchSwapData;
         uint256 minReturnAmount;
     }
 
     /// @notice Parameters for unwinding a leveraged position via flash loan
-    struct UnwindParams {
-        address collateralToken;
+    struct UnwindParams {//!৩ গুণ লিভারেজ
+        address collateralToken;//!১ হাজার ডলার collateral usdc রাখেন 
         address debtToken;
-        uint256 debtAmount;
-        bytes oneInchSwapData;
+        uint256 debtAmount;//!এবং 2গুণ লিভারেজ
+        bytes oneInchSwapData;//! 2 গুণ  swap koরার 
         uint256 minReturnAmount;
     }
 
     /// @notice Parameters for calculating leveraged position details
     struct TradeDetails {
-        uint256 ltv;
-        uint256 desiredLeverage;
-        uint256 collateralAmount;
-        uint256 collateralTokenPrice;
-        uint256 borrowTokenPrice;
-        uint256 collateralTokenDec;
-        uint256 borrowTokenDec;
+        uint256 ltv;   // 8000 80% LTV (scaled by 1e4)
+        uint256 desiredLeverage; // 20000 2x leverage (scaled by 1e4)
+        uint256 collateralAmount;// 100 USDC (6 decimals)
+        uint256 collateralTokenPrice;// USDC price = $1 (oracle scaled 1e8)
+        uint256 borrowTokenPrice; // wETH price = $2000 (oracle scaled 1e8)
+        uint256 collateralTokenDec;// USDC decimals
+        uint256 borrowTokenDec;// wETH decimals
     }
 
     /*//////////////////////////////////////////////////////////////
@@ -49,7 +49,7 @@ interface IStratax {
     /// @param user Address of the user who created the position
     /// @param collateralToken Address of the collateral token
     /// @param borrowedToken Address of the borrowed token
-    /// @param totalCollateralSupplied Total amount of collateral supplied to Aave
+    /// @param totalCollateralSupplied Total amount of collateral supplied to Aave .Its the security of instead of loan as collateral.
     /// @param borrowedAmount Amount borrowed from Aave
     /// @param healthFactor Final health factor of the position
     event LeveragePositionCreated(
@@ -67,7 +67,7 @@ interface IStratax {
     /// @param debtToken Address of the debt token
     /// @param debtRepaid Amount of debt repaid
     /// @param collateralReturned Amount of collateral withdrawn from Aave
-    event PositionUnwound(
+    event PositionUnwound(//!To close something step by step/closing the position
         address indexed user, address collateralToken, address debtToken, uint256 debtRepaid, uint256 collateralReturned
     );
 
@@ -83,7 +83,7 @@ interface IStratax {
      * @param _oneInchRouter Address of the 1inch aggregation router
      * @param _usdc Address of the USDC token
      * @param _strataxOracle Address of the Stratax price oracle
-     */
+     */ 
     function initialize(
         address _aavePool,
         address _aaveDataProvider,
@@ -98,9 +98,9 @@ interface IStratax {
 
     /**
      * @notice Callback function called by Aave after receiving flash loan
-     * @param _asset The flash loaned asset
-     * @param _amount The flash loan amount
-     * @param _premium The flash loan fee
+     * @param _asset The flash loaned asset ,usdc
+     * @param _amount The flash loan amount ,aave
+     * @param _premium The flash loan fee , repay
      * @param _initiator The initiator of the flash loan
      * @param _params Encoded parameters for the operation
      * @return bool True if the operation was successful
@@ -121,7 +121,7 @@ interface IStratax {
      * @param _oneInchSwapData The calldata from 1inch API to swap collateral back to debt token
      * @param _minReturnAmount Minimum amount of debt token expected from swap (slippage protection)
      */
-    function unwindPosition(
+    function unwindPosition(//audit এর জন্য
         address _collateralToken,
         address _debtToken,
         uint256 _debtAmount,
@@ -133,20 +133,20 @@ interface IStratax {
      * @notice Sets the Stratax Oracle address
      * @param _strataxOracle The new oracle address
      */
-    function setStrataxOracle(address _strataxOracle) external;
+    function setStrataxOracle(address _strataxOracle) external;// audit where onlyower
 
     /**
      * @notice Sets the flash loan fee in basis points
      * @param _flashLoanFeeBps The flash loan fee in basis points (e.g., 9 = 0.09%)
      */
-    function setFlashLoanFee(uint256 _flashLoanFeeBps) external;
+    function setFlashLoanFee(uint256 _flashLoanFeeBps) external;// audit where onlyower
 
     /**
      * @notice Emergency function to recover tokens sent to contract
      * @param _token The token address to recover
      * @param _amount The amount to recover
      */
-    function recoverTokens(address _token, uint256 _amount) external;
+    function recoverTokens(address _token, uint256 _amount) external;// @if send some amount of token the function cannot automatically back to the user in this case the power in just owner
 
     /**
      * @notice Updates the owner address

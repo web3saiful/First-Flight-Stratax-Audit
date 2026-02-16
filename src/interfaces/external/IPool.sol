@@ -2,13 +2,13 @@
 pragma solidity ^0.8.13;
 
 interface IPool {
-    function FLASHLOAN_PREMIUM_TOTAL() external returns (uint128);
+    function FLASHLOAN_PREMIUM_TOTAL() external returns (uint128);//!Aave pool ফি 0.09%
     function flashLoanSimple(
         address receiverAddress,
         address asset,
         uint256 amount,
         bytes calldata params,
-        uint16 referralCode
+        uint16 referralCode//!  Aave রেফারেল কোড, সাধারণত 0 হয়
     ) external;
 
     function supply(address asset, uint256 amount, address onBehalfOf, uint16 referralCode) external;
