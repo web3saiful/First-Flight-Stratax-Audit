@@ -38,7 +38,7 @@ contract Stratax is Initializable {
     }
 
     /// @notice Parameters for unwinding a leveraged position via flash loan
-    struct UnwindParams {
+    struct UnwindParams {//!কী তুলব?কত তুলব? কী শোধ করব? কত শোধ করব? কীভাবে swap করব?
         /// @notice Address of the collateral token held in Aave
         address collateralToken;
         /// @notice Amount of collateral to withdraw from Aave
@@ -50,7 +50,7 @@ contract Stratax is Initializable {
         /// @notice Encoded calldata for 1inch swap
         bytes oneInchSwapData;
         /// @notice Minimum acceptable amount from swap (slippage protection)
-        uint256 minReturnAmount;
+        uint256 minReturnAmount;//!1% slippage tolerate করবে।
     }
 
     /// @notice Parameters for calculating leveraged position details
@@ -68,7 +68,7 @@ contract Stratax is Initializable {
         /// @notice Price of borrow token in USD with 8 decimals
         uint256 borrowTokenPrice;
         /// @notice Number of decimals in the collateral token
-        uint256 collateralTokenDec;
+        uint256 collateralTokenDec;//!Example: ETH = 18 ,USDC = 6
         /// @notice Number of decimals in the borrow token
         uint256 borrowTokenDec;
     }
@@ -88,7 +88,7 @@ contract Stratax is Initializable {
 
     /// @notice Precision for leverage calculations (4 decimals, e.g., 30000 = 3x)
     uint256 public constant LEVERAGE_PRECISION = 1e4;
-
+ 
     /// @notice Safety margin for borrow calculations (9500 = 95% of max LTV)
     /// @dev This ensures positions have a healthy buffer and don't immediately risk liquidation
     uint256 public constant BORROW_SAFETY_MARGIN = 9500; // 95% of max
@@ -116,7 +116,7 @@ contract Stratax is Initializable {
 
     /// @notice Storage gap for future upgrades (reserve space for 50 new state variables)
     /// @dev This prevents storage collisions when adding new state variables in upgrades
-    uint256[50] private __gap;
+    uint256[50] private __gap;//! like train
 
     /*//////////////////////////////////////////////////////////////
                                 EVENTS
@@ -171,7 +171,7 @@ contract Stratax is Initializable {
     /// @param _usdc Address of the USDC token
     /// @param _strataxOracle Address of the Stratax price oracle
     function initialize(
-        address _aavePool,
+        address _aavePool,          
         address _aaveDataProvider,
         address _oneInchRouter,
         address _usdc,
@@ -200,7 +200,7 @@ contract Stratax is Initializable {
      * @return bool Returns true if operation succeeds
      */
     function executeOperation(
-        address _asset,
+        address _asset,//!usdc যে টোকেন flash loan হিসেবে নেওয়া হয়েছে তার ঠিকানা
         uint256 _amount,
         uint256 _premium,
         address _initiator,
@@ -241,11 +241,11 @@ contract Stratax is Initializable {
         bytes calldata _oneInchSwapData,
         uint256 _minReturnAmount
     ) external onlyOwner {
-        UnwindParams memory params = UnwindParams({
+        UnwindParams memory params = UnwindParams({//!পুরো বক্স করে flash loan ar jonno bhorche।
             collateralToken: _collateralToken,
             collateralToWithdraw: _collateralToWithdraw,
             debtToken: _debtToken,
-            debtAmount: _debtAmount,
+            debtAmount: _debtAmount, 
             oneInchSwapData: _oneInchSwapData,
             minReturnAmount: _minReturnAmount
         });
