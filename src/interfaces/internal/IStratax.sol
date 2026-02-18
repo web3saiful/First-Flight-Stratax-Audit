@@ -121,7 +121,7 @@ interface IStratax {
      * @param _oneInchSwapData The calldata from 1inch API to swap collateral back to debt token
      * @param _minReturnAmount Minimum amount of debt token expected from swap (slippage protection)
      */
-    function unwindPosition(//audit এর জন্য
+    function unwindPosition(// @audit 
         address _collateralToken,
         address _debtToken,
         uint256 _debtAmount,
@@ -133,26 +133,26 @@ interface IStratax {
      * @notice Sets the Stratax Oracle address
      * @param _strataxOracle The new oracle address
      */
-    function setStrataxOracle(address _strataxOracle) external;// audit where onlyower
+    function setStrataxOracle(address _strataxOracle) external;// @audit where onlyower
 
     /**
-     * @notice Sets the flash loan fee in basis points
+     * @notice Sets the flash loan fee in basis points 
      * @param _flashLoanFeeBps The flash loan fee in basis points (e.g., 9 = 0.09%)
      */
-    function setFlashLoanFee(uint256 _flashLoanFeeBps) external;// audit where onlyower
+    function setFlashLoanFee(uint256 _flashLoanFeeBps) external;// @audit where onlyower
 
     /**
      * @notice Emergency function to recover tokens sent to contract
      * @param _token The token address to recover
      * @param _amount The amount to recover
      */
-    function recoverTokens(address _token, uint256 _amount) external;// @if send some amount of token the function cannot automatically back to the user in this case the power in just owner
+    function recoverTokens(address _token, uint256 _amount) external;// @audit if send some amount of token the function cannot automatically back to the user in this case the power in just owner
 
     /**
      * @notice Updates the owner address
      * @param _newOwner The new owner address
      */
-    function transferOwnership(address _newOwner) external;
+    function transferOwnership(address _newOwner) external;  // @audit 
 
     /*//////////////////////////////////////////////////////////////
                         PUBLIC FUNCTIONS
@@ -168,7 +168,7 @@ interface IStratax {
      * @param _oneInchSwapData The calldata from 1inch API to swap borrowed token back to flash loan token
      * @param _minReturnAmount Minimum amount expected from swap (slippage protection)
      */
-    function createLeveragedPosition(
+    function createLeveragedPosition( //@audit if price drop
         address _flashLoanToken,
         uint256 _flashLoanAmount,
         uint256 _collateralAmount,
@@ -182,7 +182,12 @@ interface IStratax {
      * @notice Calculates the maximum theoretical leverage for a given LTV
      * @param _ltv The loan-to-value ratio with 4 decimals (e.g., 8000 = 80%)
      * @return maxLeverage The maximum leverage with 4 decimals (e.g., 50000 = 5x)
+     *
+     *  maxLeverage = 10000 / (10000 - 8000)
+            = 10000 / 2000
+            = 5x leverage
      */
+
     function getMaxLeverage(uint256 _ltv) external pure returns (uint256 maxLeverage);
 
     /**
@@ -208,7 +213,7 @@ interface IStratax {
 
     /// @notice Returns the LTV precision constant (1e4)
     function LTV_PRECISION() external view returns (uint256);
-
+ 
     /// @notice Returns the leverage precision constant (1e4)
     function LEVERAGE_PRECISION() external view returns (uint256);
 

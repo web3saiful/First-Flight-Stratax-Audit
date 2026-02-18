@@ -234,23 +234,24 @@ contract Stratax is Initializable {
      * @param _minReturnAmount Minimum amount of debt token expected from swap (slippage protection)
      */
     function unwindPosition(
-        address _collateralToken,
-        uint256 _collateralToWithdraw,
-        address _debtToken,
-        uint256 _debtAmount,
+        address _collateralToken,//WETH
+        uint256 _collateralToWithdraw,//Partial close করলে → কিছু অংশ?
+        address _debtToken,//USDC
+        uint256 _debtAmount,//কত debt repay করতে হবে।
         bytes calldata _oneInchSwapData,
         uint256 _minReturnAmount
     ) external onlyOwner {
-        UnwindParams memory params = UnwindParams({             //!পুরো বক্স করে flash loan ar jonno bhorche।
+        UnwindParams memory params = UnwindParams({ //!পুরো বক্স করে flashloan ar jonno bhorche।
             collateralToken: _collateralToken,
             collateralToWithdraw: _collateralToWithdraw,
             debtToken: _debtToken,
-            debtAmount: _debtAmount, 
+            debtAmount: _debtAmount,
             oneInchSwapData: _oneInchSwapData,
             minReturnAmount: _minReturnAmount
         });
 
-        bytes memory encodedParams = abi.encode(OperationType.UNWIND, msg.sender, params);
+        bytes memory encodedParams = abi.encode(OperationType.UNWIND, msg.sender, params);//encodedParams = 0x8394ab2398ab23.... (long binary data)
+
 
         // Initiate flash loan of the debt token to repay Aave
         aavePool.flashLoanSimple(address(this), _debtToken, _debtAmount, encodedParams, 0);
@@ -279,7 +280,7 @@ contract Stratax is Initializable {
      * @param _token The token address to recover
      * @param _amount The amount to recover
      */
-    function recoverTokens(address _token, uint256 _amount) external onlyOwner {
+    function recoverTokens(address _token, uint256 _amount) external onlyOwner {//@audit if amount more than balance?
         IERC20(_token).transfer(owner, _amount);
     }
 
@@ -312,13 +313,14 @@ contract Stratax is Initializable {
      * @param _minReturnAmount Minimum amount expected from swap (slippage protection)
      */
     function createLeveragedPosition(
-        address _flashLoanToken,
-        uint256 _flashLoanAmount,
-        uint256 _collateralAmount,
-        address _borrowToken,
-        uint256 _borrowAmount,
-        bytes calldata _oneInchSwapData,
-        uint256 _minReturnAmount
+        address _flashLoanToken,//USDC
+        uint256 _flashLoanAmount,//4000 weth
+        uint256 _collateralAmount,//1000 weth
+        address _borrowToken,// usdc
+        uint256 _borrowAmount,//3000 USDC
+        bytes calldata _oneInchSwapData,//weth → USDC swap
+        uint256 _minReturnAmount//2900 USDC
+
     ) public onlyOwner {
         require(_collateralAmount > 0, "Collateral Cannot be Zero");
         // Transfer the user's collateral to the contract
@@ -345,7 +347,7 @@ contract Stratax is Initializable {
      * @return maxLeverage The maximum leverage with 4 decimals (e.g., 50000 = 5x)
      */
     function getMaxLeverage(uint256 _ltv) public pure returns (uint256 maxLeverage) {
-        require(_ltv > 0 && _ltv < LTV_PRECISION, "Invalid LTV");
+        require(_ltv > 0 && _ltv < LTV_PRECISION, "Invalid LTV");//1/(1−0.8)=1/0.2=5
 
         // Maximum leverage = 1 / (1 - LTV)
         // With 4 decimal precision: maxLeverage = 10000 / (10000 - ltv)
