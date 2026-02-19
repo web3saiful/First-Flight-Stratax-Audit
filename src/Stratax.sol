@@ -526,6 +526,7 @@ contract Stratax is Initializable {
         uint256 afterSwapBorrowTokenbalance = IERC20(flashParams.borrowToken).balanceOf(address(this));
         require(afterSwapBorrowTokenbalance == prevBorrowTokenBalance, "Borrow token left in contract");
 
+
         // Step 4: Repay flash loan
         uint256 totalDebt = _amount + _premium;
         require(returnAmount >= totalDebt, "Insufficient funds to repay flash loan");
@@ -540,6 +541,7 @@ contract Stratax is Initializable {
             aavePool.supply(_asset, returnAmount - totalDebt, address(this), 0);
         }
 
+
         IERC20(_asset).approve(address(aavePool), totalDebt);
 
         emit LeveragePositionCreated(
@@ -548,6 +550,7 @@ contract Stratax is Initializable {
 
         return true;
     }
+
 
     /**
      * @notice Internal function to handle unwinding a leveraged position
