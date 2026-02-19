@@ -437,16 +437,23 @@ contract Stratax is Initializable {
 
         // Calculate the value of borrowed tokens in collateral token terms
         // borrowValueInCollateral = (borrowAmount * borrowPrice * 10^collateralDec) / (collateralPrice * 10^borrowDec)
-        uint256 borrowValueInCollateral = (borrowAmount * details.borrowTokenPrice * (10 ** details.collateralTokenDec))
-            / (details.collateralTokenPrice * (10 ** details.borrowTokenDec));
+        uint256 borrowValueInCollateral = (borrowAmount * details.borrowTokenPrice * (10 ** details.collateralTokenDec))//!“আমি যত borrow করেছি, সেটা collateral token হিসেবে কত হয়”
+            / (details.collateralTokenPrice * (10 ** details.borrowTokenDec));//!1000 / 2000 = 0.5 ETH
+//!Flash loan নিয়েছেন → 1 ETH
+//!Flash loan repay করতে হবে → 1.01 ETH (fee সহ)
+//!Borrow করেছেন → 1000 USDC
+//!ETH price = $2000
+//!USDC price = $1
 
-        require(borrowValueInCollateral >= minRequiredAfterSwap, "Insufficient borrow to repay flash loan");
+        require(borrowValueInCollateral >= minRequiredAfterSwap, "Insufficient borrow to repay flash loan");  
 
-        return (flashLoanAmount, borrowAmount);
+        return (flashLoanAmount, borrowAmount);//!(2000, 2400)
+
     }
 
     /**
      * @notice Calculates the amount of collateral to withdraw and debt to repay for unwinding a position
+     * 
      * @param _collateralToken The address of the collateral token
      * @param _borrowToken The address of the borrowed token
      * @return collateralToWithdraw The amount of collateral to withdraw from Aave
