@@ -520,11 +520,11 @@ contract Stratax is Initializable {
 
         // Execute swap via 1inch
         uint256 returnAmount =
-            _call1InchSwap(flashParams.oneInchSwapData, flashParams.borrowToken, flashParams.minReturnAmount);
+            _call1InchSwap(flashParams.oneInchSwapData, flashParams.borrowToken, flashParams.minReturnAmount);//! 1p= form of swap, 2p= usdc,3p= weth return amount expected
 
         // Ensure all borrowed tokens were used in the swap
         uint256 afterSwapBorrowTokenbalance = IERC20(flashParams.borrowToken).balanceOf(address(this));
-        require(afterSwapBorrowTokenbalance == prevBorrowTokenBalance, "Borrow token left in contract");
+        require(afterSwapBorrowTokenbalance == prevBorrowTokenBalance,"Borrow token left in contract");
 
 
         // Step 4: Repay flash loan
@@ -533,7 +533,7 @@ contract Stratax is Initializable {
 
         // Step 5: Check health factor of user's position
         (,,,,, uint256 healthFactor) = aavePool.getUserAccountData(address(this));
-        require(healthFactor > 1e18, "Position health factor too low");
+        require(healthFactor > 1e18, "Position health factor too low ");
 
         // Supply any leftover tokens back to Aave to improve position health
         if (returnAmount - totalDebt > 0) {
