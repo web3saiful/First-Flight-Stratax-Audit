@@ -16,9 +16,9 @@ contract Stratax is Initializable {
     /// @notice Enum for flash loan operation types
     enum OperationType {
         /// @notice Opening a new leveraged position
-        OPEN,
+        OPEN,//! Active
         /// @notice Unwinding an existing leveraged position
-        UNWIND
+        UNWIND//! close
     }
 
     /// @notice Parameters for opening a leveraged position via flash loan
@@ -39,7 +39,7 @@ contract Stratax is Initializable {
 
     /// @notice Parameters for unwinding a leveraged position via flash loan
     struct UnwindParams {//!কী তুলব?কত তুলব? কী শোধ করব? কত শোধ করব? কীভাবে swap করব?
-        /// @notice Address of the collateral token held in Aave
+        /// @notice Address of the collateral token held in Aave //!weth
         address collateralToken;
         /// @notice Amount of collateral to withdraw from Aave
         uint256 collateralToWithdraw;
@@ -542,6 +542,7 @@ contract Stratax is Initializable {
         }
 
 
+
         IERC20(_asset).approve(address(aavePool), totalDebt);
 
         emit LeveragePositionCreated(
@@ -583,12 +584,12 @@ contract Stratax is Initializable {
             uint256 collateralTokenPrice = IStrataxOracle(strataxOracle).getPrice(unwindParams.collateralToken);
             require(debtTokenPrice > 0 && collateralTokenPrice > 0, "Invalid prices");
 
-            // Calculate collateral to withdraw: (debtAmount * debtPrice * collateralDec * LTV_PRECISION) / (collateralPrice * debtDec * ltv)
-            uint256 collateralToWithdraw = (
+            // Calculate collateral to withdraw: (debtAmount 1000usdc * debtPrice 1usd * collateralDec 18 * LTV_PRECISION 1e4) / (collateralPrice 2000 * debtDec 10e6* ltv 8000)
+            uint256 collateralToWithdraw = (//!0.625 WETH
                 _amount * debtTokenPrice * (10 ** IERC20(unwindParams.collateralToken).decimals()) * LTV_PRECISION
             ) / (collateralTokenPrice * (10 ** IERC20(_asset).decimals()) * liqThreshold);
 
-            withdrawnAmount = aavePool.withdraw(unwindParams.collateralToken, collateralToWithdraw, address(this));
+            withdrawnAmount = aavePool.withdraw(unwindParams.collateralToken, collateralToWithdraw, address(this)); //! weth,0.625,
         }
 
         // Step 3: Swap collateral to debt token to repay flash loan
@@ -605,11 +606,11 @@ contract Stratax is Initializable {
             IERC20(_asset).approve(address(aavePool), returnAmount - totalDebt);
             aavePool.supply(_asset, returnAmount - totalDebt, address(this), 0);
         }
-
-        IERC20(_asset).approve(address(aavePool), totalDebt);
+ 
+        IERC20(_asset).approve(address(aavePool), totalDebt); //! giving approval to aave to take the flash loan amount + fee (sender, amount)
 
         emit PositionUnwound(user, unwindParams.collateralToken, _asset, _amount, withdrawnAmount);
-
+        
         return true;
     }
 

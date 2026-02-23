@@ -20,7 +20,7 @@ interface IPool {
         external
         returns (uint256);
 
-    function withdraw(address asset, uint256 amount, address to) external returns (uint256);
+    function withdraw(address asset, uint256 amount, address to) external returns (uint256);//! usdc adsset
 
     function getUserAccountData(address user)
         external
